@@ -9,12 +9,13 @@ import time
 import requests
 import http.client
 
-
+__unittest = True
 
 class CacheTest(unittest.TestCase):
     """
         Basis class common to all CMS and tests
     """
+
 
     def setUp(self, proxy, port, website):
 
@@ -52,8 +53,6 @@ class CacheTest(unittest.TestCase):
         return 'http://%s%s' % (self.website, path)
 
     def get_once(self, url, **kwargs):
-        # self.build_url(url)
-        # print("once url ", url, " headers ", self.headers)
         response = self.get_request(url)
         return response
 
@@ -61,13 +60,31 @@ class CacheTest(unittest.TestCase):
         """
         Fetch a url twice and return the second response (for testing cache hits).
         """
-        # self.build_url(url)
-        #self.headers.update({'Connection' : 'close'})
 
         self.get_request(url)
         time.sleep(2)
-        # print("Url : ", url, "Request : ", self.headers)
         response = self.get_request(url)
+        return response
+
+
+    def get_twice_tokenized(self, url, tokenname=None, **kwargs):
+        """
+        Fetch a url twice with two different tokens and return the 2nd response
+        """
+
+        if tokenname != None:
+            token = tokenname + "=" + str(random.randint(10000,999999))
+        else:
+            token = str(random.randint(10000,999999))
+        #print("url1: " + url + "?" + token)
+        self.get_request(url + "?" + token)
+        time.sleep(2)
+        if tokenname != None    :
+            token = tokenname + "=" + str(random.randint(10000,999999))
+        else:
+            token = str(random.randint(10000,999999))
+        #print("url2: " + url + "?" + token)
+        response = self.get_request(url + "?" + token)
         return response
 
     """
@@ -78,7 +95,7 @@ class CacheTest(unittest.TestCase):
         """
         Assert that a given response contains the header indicating a cache hit.
         """
-        self.assertEqual(response.headers['X-Cache'].lower(), 'HIT'.lower())
+        self.assertEqual(response.headers['X-Cache'].lower(), 'HIT'.lower(), msg='Uncached while cache was expected')
 
     def assertMiss(self, response):
         """
