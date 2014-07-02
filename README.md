@@ -1,7 +1,8 @@
 cache-unit-test
 ===============
 
-Unit test Python library 
+Unit test Python library for testing cache systems like varnish
+
 
 
 - [x] cachetest.py : productive
