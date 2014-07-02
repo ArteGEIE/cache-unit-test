@@ -1,0 +1,322 @@
+
+#!/usr/bin/env python
+
+import sys, getopt
+import json
+import re
+import random
+import unittest
+
+
+from cachetest import CacheTest 
+
+
+PROXYHOST='127.0.0.1'
+PROXYPORT='80'
+
+"""
+	ARTE Homepage
+"""
+class TestHome(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_homeLangRedirect(self):
+		url = '/'
+
+		response = self.get_once(url)
+		self.assert301(response)
+
+	def test_homeCache(self):
+		url = '/fr'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "HPV2")
+		self.assertMaxAge(response, 300)
+
+	def test_homeImage(self):
+		url = '/hpv2/sites/default/themes/arte_homepage_theme/img/icon-top-arrow.gif'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "HPV2")
+		
+
+
+"""
+	HbbtvV2
+"""
+class TestHbbtv(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+	
+	def test_homeHbbtvV2(self):
+		url = '/hbbtvv2/'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "HBBTVV2")
+		
+
+"""
+	ARTE TVGuide
+"""
+class TestTVGuide(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_GuideLangRedirect(self):
+		url = '/guide/'
+
+		response = self.get_once(url)
+		self.assert301(response)
+		self.assertBackend(response, "TVGUIDE")
+
+	def test_GuideCache(self):
+		url = '/guide/fr'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "TVGUIDE")
+
+"""
+	ARTE PAPI
+"""
+class TestPAPI(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_PapiEpgLive(self):
+		url = '/papi/tvguide/epg/live/F/L3/10'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 60)
+		self.assertBackend(response, "EPGAPI")
+
+	def test_PapiEpgCluster(self):
+		url = '/papi/tvguide/epg/clusters/F/0/ALL'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 1800)
+		self.assertBackend(response, "EPGAPI")
+
+	def test_PapiVideoLivestream(self):
+		url = '/papi/tvguide/videos/livestream/player/F'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 60)
+		self.assertBackend(response, "EPGAPI")
+
+"""
+	ARTE Header
+"""
+class TestHeader(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_HeaderImage(self):
+		url = '/header-arte/assets/img/Elements_Header.png'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 3600)
+		self.assertBackend(response, "HEADERARTE")
+
+	def test_headerJavascript(self):
+		url ='/header-arte/2014/assets/js/ArteHeader.js'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "HEADERARTE")
+
+"""
+	ARTE Webservice Geolocation
+"""
+class TestGeolocWebservice(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_WebserviceGeoloc(self):
+		url = '/artews/js/geolocation.js'
+
+		response = self.get_twice(url)
+		self.assertMiss(response)
+		self.assertBackend(response, "ARTEWS")
+
+"""
+	ARTE player
+"""
+class TestPlayer(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_Player(self):
+		url = '/playerv2/index.php'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 240)
+		self.assertBackend(response, "PLAYER")
+
+	def test_PlayerStyle(self):
+		url = '/playerv2/css/style.css'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 240)
+		self.assertBackend(response, "PLAYER")
+
+"""
+	About Kate (dead project)
+"""
+class TestAboutKate(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "kate.arte.tv")
+		
+	def test_AboutKate_Home(self):
+		url = '/'
+
+		response = self.get_once(url)
+		self.assert30X(response)
+
+"""
+	Summer of 90s
+"""
+class TestSummerOf90s(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "summerof90s.arte.tv")
+		
+	def test_Summerof90s_Home(self):
+		url = '/'
+
+		response = self.get_once(url)
+		self.assert30X(response)
+		self.assertBackend(response, "SUMMEROF90S")
+
+	def test_Summerof90s_Start(self):
+		url = '/fr/start'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "SUMMEROF90S")
+
+"""
+	CDN Proxy ARTE Concert
+"""
+class TestCDNProxyConcert(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_CDNProxyConcert_imagetoken(self):
+		url = '/cdnp-concert/sites/all/themes/alw/images/po/play_white_big.png'
+
+		response = self.get_twice_tokenized(url, "itok")
+		self.assertHit(response)
+		self.assertBackend(response, "CDNPROXYCONCERT_PROD")
+
+"""
+	CDN Proxy ARTE Future
+"""
+class TestCDNProxyFuture(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_CDNProxyFuture_imagetoken(self):
+		url = '/cdnp-future/sites/default/themes/arte_future/favicon.ico'
+
+		response = self.get_twice_tokenized(url)
+		self.assertHit(response)
+		self.assertBackend(response, "CDNPROXYFUTURE_PROD")
+
+"""
+	CDN Proxy ARTE Creative
+"""
+class TestCDNProxyCreative(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_CDNProxyCreative_imagetoken(self):
+		url = '/cdnp-creative/sites/default/themes/artecreative_theme/fonts/proximanova_bold_macroman/ProximaNova-Bold-webfont.woff'
+
+		response = self.get_twice_tokenized(url, "itok")
+		self.assertHit(response)
+		self.assertBackend(response, "CDNPROXYCREATIVE_PROD")
+
+
+"""
+	24h Jerusalem
+"""
+class Test24hJerusalem(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "24hjerusalem.tv")
+
+	def test_24hJerusalemRedirect(self):
+		url = '/'
+
+		response = self.get_once(url)
+		self.assert30X(response)
+		self.assertBackend(response, "24hjerusalem")
+
+class Test24hJerusalemWWW(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.24hjerusalem.tv")
+
+	def test_24hJerusalemHome(self):
+		url = '/fr'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 180)
+		self.assertBackend(response, "24hjerusalem")
+
+
+"""
+	Wordpress
+"""
+class TestWordpress(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_WordpressHome(self):
+		url = '/sites/'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertBackend(response, "WORDPRESS")
+
+"""
+	Static
+"""
+class TestStatic(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_StaticFont(self):
+		url = '/static/fonts/ProximaNova-Thin-webfont.woff'
+
+		response = self.get_twice(url)
+		self.assertHit(response)
+		self.assertMaxAge(response, 315360000)
+		self.assertBackend(response, "STATIC")
+
+"""
+	Tracking API
+"""
+class TestTrackingAPI(CacheTest):
+	def setUp(self):
+		CacheTest.setUp(self, PROXYHOST, PROXYPORT, "www.arte.tv")
+
+	def test_TrackingAPIok(self):
+		url = '/api/tracking/v1/ok'
+
+		response = self.get_twice(url)
+		self.assertMiss(response)
+		self.assertBackend(response, "TRACKING-API")
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
