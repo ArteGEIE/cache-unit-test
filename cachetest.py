@@ -22,25 +22,29 @@ class CacheTest(unittest.TestCase):
         self.website = ""
         self.headers = None
 
-        if website != "":
-            self.website = website
-            self.headers = {'Host' : self.website}
-
-
         self.proxies = None
         if proxy != "":
             # print("proxying website ", website, " with proxy ", proxy)
             self.proxies = { "http": proxy, "https": proxy}
             self.proxy = proxy
 
-        self.port = port
+        self.port = 80
+        if port != "":
+            self.port = port
 
+        if website != "":
+            self.website = website
+            self.headers = {'Host' : self.website}
+
+    # Add specific header
+    def set_header(self, header_value):
+        self.headers.update(header_value)
 
     def get_request(self, url):
         # Recoding get request to allow proxy
         conn = http.client.HTTPConnection(self.proxy, self.port)
         conn.putrequest("GET", url,  skip_host=True)
-        conn.putheader("Host", self.website)
+        conn.putheader(self.headers)
         conn.endheaders()
         response = conn.getresponse()
         conn.close()
