@@ -44,7 +44,8 @@ class CacheTest(unittest.TestCase):
         # Recoding get request to allow proxy
         conn = http.client.HTTPConnection(self.proxy, self.port)
         conn.putrequest("GET", url,  skip_host=True)
-        conn.putheader(self.headers)
+        for header in self.headers.keys():
+            conn.putheader(str(header), str(self.headers.get(header)))
         conn.endheaders()
         response = conn.getresponse()
         conn.close()
