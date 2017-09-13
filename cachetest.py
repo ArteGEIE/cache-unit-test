@@ -177,4 +177,7 @@ class CacheTest(unittest.TestCase):
     def assertBackend(self, response, backend):
         self.assertEqual(response.headers['X-Back'].lower(), backend.lower())
 
+    def assertRedirectURL(self, response, url):
+        self.assertEqual(response.reason.lower(), url.lower())
+
 
