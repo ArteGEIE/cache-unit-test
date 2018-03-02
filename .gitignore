@@ -37,6 +37,7 @@ ehthumbs.db
 Thumbs.db
 
 # Specific packages
+*.py_package
 build
 dist
 MANIFEST
