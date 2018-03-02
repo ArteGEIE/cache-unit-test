@@ -10,6 +10,9 @@ import requests
 import http.client
 
 __unittest = True
+PROXYHOST=""
+PROXYPORT=""
+PROXYHTTPSPORT=""
 
 class CacheUnitTest(unittest.TestCase):
     """
