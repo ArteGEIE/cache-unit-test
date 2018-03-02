@@ -10,8 +10,11 @@ import requests
 import http.client
 
 __unittest = True
+PROXYHOST=""
+PROXYPORT=""
+PROXYHTTPSPORT=""
 
-class CacheTest(unittest.TestCase):
+class CacheUnitTest(unittest.TestCase):
     """
         Basis class common to all CMS and tests
     """
