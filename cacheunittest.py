@@ -11,7 +11,7 @@ import http.client
 
 __unittest = True
 
-class CacheTest(unittest.TestCase):
+class CacheUnitTest(unittest.TestCase):
     """
         Basis class common to all CMS and tests
     """
