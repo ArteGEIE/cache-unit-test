@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='cacheunittest',
-    version='0.1.13',
+    version='0.1.14',
     author='Patrice Eber',
     author_email='patrice.eber@arte.tv',
     url='https://pypi.org/pypi/CacheUnitTest/',
