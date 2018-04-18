@@ -1,0 +1,6 @@
+MANIFEST
+build
+dist
+
+*.zip
+*.tar.gz

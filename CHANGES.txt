@@ -1,0 +1,3 @@
+v0.1.12 -- bug fix
+v0.1.0 -- Initial release
+
