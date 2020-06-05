@@ -2,6 +2,8 @@ MANIFEST
 build
 dist
 
+__pycache__/
+
 # Compiled source #
 ###################
 *.com
@@ -45,5 +47,5 @@ Thumbs.db
 *.py_package
 build
 dist
-MANIFEST
->>>>>>> e7a9d87f81af5894bebb1ca1237c5d843943bd68
+
+

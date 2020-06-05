@@ -8,6 +8,7 @@ import time
 
 import requests
 import http.client
+import ssl
 
 from xml.dom import minidom
 
@@ -17,30 +18,62 @@ PROXYHOST=""
 PROXYPORT=""
 PROXYHTTPSPORT=""
 
+'''
+ Based on https://stackoverflow.com/questions/61280350/how-to-set-the-sni-via-http-client-httpsconnection
+'''
+
+class WrapSSSLContext(ssl.SSLContext):
+	'''
+	HTTPSConnection provides no way to specify the
+	server_hostname in the underlying socket. We
+	accomplish this by wrapping the context to
+	overrride the wrap_socket behavior (called later
+	by HTTPSConnection) to specify the
+	server_hostname that we want.
+	'''
+	def __new__(cls, server_hostname, *args, **kwargs):
+		return super().__new__(cls, *args, *kwargs)
+
+
+	def __init__(self, server_hostname, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self._server_hostname = server_hostname
+
+
+	def wrap_socket(self, sock, *args, **kwargs):
+		kwargs['server_hostname'] = self._server_hostname
+		return super().wrap_socket(sock, *args, **kwargs)
+
+
 class CacheUnitTest(unittest.TestCase):
 	"""
 		Basis class common to all CMS and tests
 	"""
 
+	def setUp(self, proxy, port, website, https=False):
 
-	def setUp(self, proxy, port, website):
-
-		self.website = ""
 		self.headers = None
 
 		self.proxies = None
-		if proxy != "":
-			# print("proxying website ", website, " with proxy ", proxy)
+		if proxy:
 			self.proxies = { "http": proxy, "https": proxy}
 			self.proxy = proxy
 
-		self.port = 80
-		if port != "":
+		if port:
 			self.port = port
+		else:
+			if not https:
+				self.port = 80
+			else:
+				self.port = 443
 
-		if website != "":
+		if website:
 			self.website = website
 			self.headers = {'Host' : self.website}
+
+		self.https = https
+
+
 
 	# Add specific header
 	def set_header(self, header_value):
@@ -49,7 +82,14 @@ class CacheUnitTest(unittest.TestCase):
 
 	def purge_request(self, url):
 		# Recoding get request to allow proxy
-		conn = http.client.HTTPConnection(self.proxy, self.port)
+		if not self.https:
+			print("Establish HTTP connection")
+			conn = http.client.HTTPConnection(self.proxy, self.port)
+		else:
+			proxy_to_server_context = WrapSSSLContext(self.proxy)
+			print("Establish HTTPS connection with a SSL wrapper")
+
+			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
 		conn.putrequest("PURGE", url,  skip_host=True)
 		conn.putheader('Host', str(self.website))
 		conn.endheaders()
@@ -59,7 +99,14 @@ class CacheUnitTest(unittest.TestCase):
 
 	def get_request(self, url):
 		# Recoding get request to allow proxy
-		conn = http.client.HTTPConnection(self.proxy, self.port)
+		if not self.https:
+			print("Establish HTTP connection")
+			conn = http.client.HTTPConnection(self.proxy, self.port)
+		else:
+			proxy_to_server_context = WrapSSSLContext(self.proxy)
+			print("Establish HTTPS connection with a SSL wrapper")
+			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
+
 		conn.putrequest("GET", url,  skip_host=True)
 		for header in self.headers.keys():
 			conn.putheader(str(header), str(self.headers.get(header)))
@@ -68,6 +115,19 @@ class CacheUnitTest(unittest.TestCase):
 		# print("*** GET ***" + str(response.read()))
 		conn.close()
 		return response
+
+	def request(self, method, url):
+		if not self.https:
+			conn = http.client.HTTPConnection(self.proxy, self.port)
+		else:
+			conn = http.client.HTTPSConnection(self.proxy, self.port)
+		conn.putrequest(method, url, skip_host=True)
+		conn.putheader('Host', str(self.website))
+		conn.endheaders()
+		response = conn.getresponse()
+		conn.close()
+		return response		
+
 
 	def build_url(self, path):
 		"""
