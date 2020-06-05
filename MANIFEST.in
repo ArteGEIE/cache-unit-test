@@ -1,2 +1,6 @@
 include *.txt
 recursive-include docs *.txt
+
+include AUTHORS
+include LICENSE.txt
+include README.md

@@ -1,5 +1,5 @@
 from distutils.core import setup
-
+import setuptools
 
 
 with open("README.md", "r") as fh:
@@ -9,14 +9,15 @@ setup(
 	name='cacheunittest',
 	version='1.2.0',
 	author='Alapaje',
-	author_email='patrice.eber@arte.tv',
-	url='https://pypi.org/pypi/CacheUnitTest/',
+	author_email='paje@github.com',
 	license='LICENSE.txt',
 	description='Varnish unit test',
 	long_description=long_description,
 	long_description_content_type="text/markdown",
+	url="https://github.com/ArteGEIE/cache-unit-test",
+    packages=setuptools.find_packages(),
 	py_modules=['cacheunittest'],
 	install_requires=[
 		"request >= 0.0.26"],
-	python_requires='>=3.6',
+	python_requires='>=3.7',
 )
