@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 	
 setup(
 	name='cacheunittest',
-	version='1.2.0',
+	version='1.2.1',
 	author='Alapaje',
 	author_email='paje@github.com',
 	license='LICENSE.txt',
