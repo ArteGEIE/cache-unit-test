@@ -75,12 +75,9 @@ class CacheUnitTest(unittest.TestCase):
 	def purge_request(self, url):
 		# Recoding get request to allow proxy
 		if not self.https:
-			print("Establish HTTP connection")
 			conn = http.client.HTTPConnection(self.proxy, self.port)
 		else:
 			proxy_to_server_context = WrapSSSLContext(self.proxy)
-			print("Establish HTTPS connection with a SSL wrapper")
-
 			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
 		conn.putrequest("PURGE", url, skip_host=True)
 		conn.putheader('Host', str(self.website))
