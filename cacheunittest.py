@@ -1,44 +1,39 @@
-import random
-import unittest
-import sys, getopt
+import http.client
 import http.cookiejar
 import json
+import random
 import re
-import time
-
-import requests
-import http.client
 import ssl
-
+import time
+import unittest
 from xml.dom import minidom
 
-
 __unittest = True
-PROXYHOST=""
-PROXYPORT=""
-PROXYHTTPSPORT=""
+PROXYHOST = ""
+PROXYPORT = ""
+PROXYHTTPSPORT = ""
 
 '''
  Based on https://stackoverflow.com/questions/61280350/how-to-set-the-sni-via-http-client-httpsconnection
 '''
 
+
 class WrapSSSLContext(ssl.SSLContext):
-	'''
+	"""
 	HTTPSConnection provides no way to specify the
 	server_hostname in the underlying socket. We
 	accomplish this by wrapping the context to
 	overrride the wrap_socket behavior (called later
 	by HTTPSConnection) to specify the
 	server_hostname that we want.
-	'''
+	"""
+
 	def __new__(cls, server_hostname, *args, **kwargs):
 		return super().__new__(cls, *args, *kwargs)
-
 
 	def __init__(self, server_hostname, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self._server_hostname = server_hostname
-
 
 	def wrap_socket(self, sock, *args, **kwargs):
 		kwargs['server_hostname'] = self._server_hostname
@@ -56,7 +51,7 @@ class CacheUnitTest(unittest.TestCase):
 
 		self.proxies = None
 		if proxy:
-			self.proxies = { "http": proxy, "https": proxy}
+			self.proxies = {"http": proxy, "https": proxy}
 			self.proxy = proxy
 
 		if port:
@@ -69,16 +64,13 @@ class CacheUnitTest(unittest.TestCase):
 
 		if website:
 			self.website = website
-			self.headers = {'Host' : self.website}
+			self.headers = {'Host': self.website}
 
 		self.https = https
-
-
 
 	# Add specific header
 	def set_header(self, header_value):
 		self.headers.update(header_value)
-
 
 	def purge_request(self, url):
 		# Recoding get request to allow proxy
@@ -90,7 +82,7 @@ class CacheUnitTest(unittest.TestCase):
 			print("Establish HTTPS connection with a SSL wrapper")
 
 			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
-		conn.putrequest("PURGE", url,  skip_host=True)
+		conn.putrequest("PURGE", url, skip_host=True)
 		conn.putheader('Host', str(self.website))
 		conn.endheaders()
 		response = conn.getresponse()
@@ -107,7 +99,7 @@ class CacheUnitTest(unittest.TestCase):
 			print("Establish HTTPS connection with a SSL wrapper")
 			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
 
-		conn.putrequest("GET", url,  skip_host=True)
+		conn.putrequest("GET", url, skip_host=True)
 		for header in self.headers.keys():
 			conn.putheader(str(header), str(self.headers.get(header)))
 		conn.endheaders()
@@ -126,8 +118,7 @@ class CacheUnitTest(unittest.TestCase):
 		conn.endheaders()
 		response = conn.getresponse()
 		conn.close()
-		return response		
-
+		return response
 
 	def build_url(self, path):
 		"""
@@ -135,9 +126,9 @@ class CacheUnitTest(unittest.TestCase):
 		"""
 		return 'http://%s%s' % (self.website, path)
 
-	def get_once(self, url, needPurge=False, **kwargs):
-		if needPurge:
-			 self.purge_request(url)
+	def get_once(self, url, needpurge=False, **kwargs):
+		if needpurge:
+			self.purge_request(url)
 		response = self.get_request(url)
 		return response
 
@@ -151,27 +142,25 @@ class CacheUnitTest(unittest.TestCase):
 		response = self.get_request(url)
 		return response
 
-
 	def get_twice_tokenized(self, url, tokenname=None, **kwargs):
 		"""
 		Fetch a url twice with two different tokens and return the 2nd response
 		"""
 
-		if tokenname != None:
-			token = tokenname + "=" + str(random.randint(10000,999999))
+		if tokenname is not None:
+			token = tokenname + "=" + str(random.randint(10000, 999999))
 		else:
-			token = str(random.randint(10000,999999))
-		#print("url1: " + url + "?" + token)
+			token = str(random.randint(10000, 999999))
+		# print("url1: " + url + "?" + token)
 		self.get_request(url + "?" + token)
 		# time.sleep(2)
-		if tokenname != None    :
-			token = tokenname + "=" + str(random.randint(10000,999999))
+		if tokenname is not None:
+			token = tokenname + "=" + str(random.randint(10000, 999999))
 		else:
-			token = str(random.randint(10000,999999))
-		#print("url2: " + url + "?" + token)
+			token = str(random.randint(10000, 999999))
+		# print("url2: " + url + "?" + token)
 		response = self.get_request(url + "?" + token)
 		return response
-
 
 	def purgeandget_twice(self, url, **kwargs):
 		"""
@@ -184,7 +173,6 @@ class CacheUnitTest(unittest.TestCase):
 		response = self.get_request(url)
 		return response
 
-
 	"""
 		Assertions
 	"""
@@ -193,7 +181,8 @@ class CacheUnitTest(unittest.TestCase):
 		"""
 		Assert that a given response contains the header indicating a cache hit.
 		"""
-		self.assertEqual(str(response.headers['X-Cache']).lower(), 'HIT'.lower(), msg='Uncached while cache was expected')
+		self.assertEqual(str(response.headers['X-Cache']).lower(), 'HIT'.lower(),
+						 msg='Uncached while cache was expected')
 
 	def assertMiss(self, response):
 		"""
@@ -217,7 +206,7 @@ class CacheUnitTest(unittest.TestCase):
 		"""
 		Assert that a given response contains the header indicating specific "max-age" value.
 		"""
-		MAX_AGE_REGEX = re.compile('max-age\s*=\s*(\d+)')
+		max_age_regex = re.compile('max-age\s*=\s*(\d+)')
 		try:
 			cache_control = response.headers['cache-control']
 		except KeyError:
@@ -226,7 +215,7 @@ class CacheUnitTest(unittest.TestCase):
 			except:
 				raise AssertionError('No cache-control header.')
 
-		max_age = MAX_AGE_REGEX.match(cache_control)
+		max_age = max_age_regex.match(cache_control)
 
 		if not max_age:
 			raise AssertionError('No max-age specified in cache-control header.')
@@ -243,11 +232,11 @@ class CacheUnitTest(unittest.TestCase):
 	def assert301(self, response):
 		# Permanent redirect
 		self.assertEqual(response.status, 301)
- 
+
 	def assert302(self, response):
 		# Temporary redirect
 		self.assertEqual(response.status, 302)
- 
+
 	def assert304(self, response):
 		# Not modified
 		self.assertEqual(response.status, 304)

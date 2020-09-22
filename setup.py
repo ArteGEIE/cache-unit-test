@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 	
 setup(
 	name='cacheunittest',
-	version='1.2.1',
+	version='1.2.3',
 	author='Alapaje',
 	author_email='paje@github.com',
 	license='LICENSE.txt',
@@ -18,6 +18,6 @@ setup(
     packages=setuptools.find_packages(),
 	py_modules=['cacheunittest'],
 	install_requires=[
-		"request >= 0.0.26"],
+		"requests"],
 	python_requires='>=3.7',
 )
