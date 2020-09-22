@@ -1,4 +1,4 @@
-v1.2.4 -- Remove debug prints
+v1.2.5 -- Remove debug prints
 v1.2.3 -- Corrections
 v1.2.0 -- Add HTTPS connection, add any kind of HTTP METHOD request
 v1.1.0 -- Add Purge JSON and XML tests
