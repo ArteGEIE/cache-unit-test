@@ -1,6 +1,6 @@
-Metadata-Version: 1.2.4
+Metadata-Version: 1.2.6
 Name: cacheunittest
-Version: 1.2.5
+Version: 1.2.6
 Summary: Varnish unit test
 Home-page: https://pypi.org/pypi/CacheUnitTest/
 Author: Patrice Eber (ARTE)

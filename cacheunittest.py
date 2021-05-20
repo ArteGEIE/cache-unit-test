@@ -73,20 +73,15 @@ class CacheUnitTest(unittest.TestCase):
 		self.headers.update(header_value)
 
 	def purge_request(self, url):
-		# Recoding get request to allow proxy
-		if not self.https:
-			conn = http.client.HTTPConnection(self.proxy, self.port)
-		else:
-			proxy_to_server_context = WrapSSSLContext(self.proxy)
-			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
-		conn.putrequest("PURGE", url, skip_host=True)
-		conn.putheader('Host', str(self.website))
-		conn.endheaders()
-		response = conn.getresponse()
-		conn.close()
-		return response
+
+		self.set_header({'Host': str(self.website)})
+		return self.request("PURGE", url)
+
 
 	def get_request(self, url):
+		return self.request("GET", url)
+
+	def request(self, method, url):
 		# Recoding get request to allow proxy
 		if not self.https:
 			conn = http.client.HTTPConnection(self.proxy, self.port)
@@ -94,24 +89,12 @@ class CacheUnitTest(unittest.TestCase):
 			proxy_to_server_context = WrapSSSLContext(self.proxy)
 			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
 
-		conn.putrequest("GET", url, skip_host=True)
+		conn.putrequest(method, url, skip_host=True)
 		for header in self.headers.keys():
 			conn.putheader(str(header), str(self.headers.get(header)))
 		conn.endheaders()
 		response = conn.getresponse()
 		# print("*** GET ***" + str(response.read()))
-		conn.close()
-		return response
-
-	def request(self, method, url):
-		if not self.https:
-			conn = http.client.HTTPConnection(self.proxy, self.port)
-		else:
-			conn = http.client.HTTPSConnection(self.proxy, self.port)
-		conn.putrequest(method, url, skip_host=True)
-		conn.putheader('Host', str(self.website))
-		conn.endheaders()
-		response = conn.getresponse()
 		conn.close()
 		return response
 
