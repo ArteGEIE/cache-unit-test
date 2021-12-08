@@ -8,6 +8,10 @@ import time
 import unittest
 from xml.dom import minidom
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 __unittest = True
 PROXYHOST = ""
 PROXYPORT = ""
@@ -68,6 +72,9 @@ class CacheUnitTest(unittest.TestCase):
 
 		self.https = https
 
+		self.response_content = ""
+		self.response_content_bytes = 2048
+
 	# Add specific header
 	def set_header(self, header_value):
 		self.headers.update(header_value)
@@ -77,24 +84,28 @@ class CacheUnitTest(unittest.TestCase):
 		self.set_header({'Host': str(self.website)})
 		return self.request("PURGE", url)
 
-
 	def get_request(self, url):
 		return self.request("GET", url)
 
 	def request(self, method, url):
 		# Recoding get request to allow proxy
 		if not self.https:
+			logging.debug("Establishing HTTP Connection with {} on port {}".format(self.proxy, self.port))
 			conn = http.client.HTTPConnection(self.proxy, self.port)
 		else:
 			proxy_to_server_context = WrapSSSLContext(self.proxy)
+			logging.debug("Establishing HTTPS Connection with {} on port {}".format(self.proxy, self.port))
 			conn = http.client.HTTPSConnection(self.proxy, self.port, context=proxy_to_server_context)
 
+		logging.debug("Pushing request on url {} with method {}".format(url, method))
 		conn.putrequest(method, url, skip_host=True)
 		for header in self.headers.keys():
+			logging.debug("Specifying header {} with value {}".format(str(header), self.headers.get(header)))
 			conn.putheader(str(header), str(self.headers.get(header)))
 		conn.endheaders()
 		response = conn.getresponse()
-		# print("*** GET ***" + str(response.read()))
+		self.response_header = response.headers
+		self.response_content = str(response.read(self.response_content_bytes))
 		conn.close()
 		return response
 
@@ -131,7 +142,6 @@ class CacheUnitTest(unittest.TestCase):
 			token = str(random.randint(10000, 999999))
 		# print("url1: " + url + "?" + token)
 		self.get_request(url + "?" + token)
-		# time.sleep(2)
 		if tokenname is not None:
 			token = tokenname + "=" + str(random.randint(10000, 999999))
 		else:
@@ -254,15 +264,18 @@ class CacheUnitTest(unittest.TestCase):
 
 	def assertValidJSON(self, response):
 		try:
-			json_object = json.loads(response.read())
+			logging.debug("Parsing response {} first {} bytes, expecting valid JSON".format(self.response_content,
+																							self.response_content_bytes))
+			json_object = json.loads(self.response_content)
 			return True
 		except ValueError as error:
 			return False
 
 	def assertValidXML(self, response):
 		try:
-			print("response: " + str(response.read()))
-			minidom.parseString(response.read())
+			logging.debug("Parsing response {} first {} bytes, expecting valid JSON".format(self.response_content,
+																							self.response_content_bytes))
+			minidom.parseString(self.response_content)
 			return True
 		except ValueError as error:
 			return False

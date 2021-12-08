@@ -1,3 +1,4 @@
+v1.3.0 -- Ability to play with the content
 v1.2.5 -- Remove a bug on the request procedure
 v1.2.5 -- Remove debug prints
 v1.2.3 -- Corrections

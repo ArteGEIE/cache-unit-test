@@ -7,11 +7,11 @@ with open("README.md", "r") as fh:
 	
 setup(
 	name='cacheunittest',
-	version='1.2.6',
+	version='1.3.0',
 	author='Alapaje',
 	author_email='paje@github.com',
 	license='LICENSE.txt',
-	description='Varnish unit test',
+	description='Varnish integration unit test',
 	long_description=long_description,
 	long_description_content_type="text/markdown",
 	url="https://github.com/ArteGEIE/cache-unit-test",

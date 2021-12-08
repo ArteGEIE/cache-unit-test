@@ -49,3 +49,5 @@ build
 dist
 
 
+/cacheunittest.egg-info/top_level.txt
+/cacheunittest.egg-info/PKG-INFO
