@@ -80,8 +80,6 @@ class CacheUnitTest(unittest.TestCase):
 		self.headers.update(header_value)
 
 	def purge_request(self, url):
-
-		self.set_header({'Host': str(self.website)})
 		return self.request("PURGE", url)
 
 	def get_request(self, url):
@@ -279,3 +277,4 @@ class CacheUnitTest(unittest.TestCase):
 			return True
 		except ValueError as error:
 			return False
+
